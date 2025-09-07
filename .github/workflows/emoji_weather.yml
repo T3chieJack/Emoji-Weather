@@ -1,0 +1,21 @@
+name: Emoji Weather (Hatfield 9am UK)
+
+on:
+  schedule:
+    - cron: "0 9 * * *"   # 09:00 UTC → 09:00 UK in winter
+  workflow_dispatch: {}
+
+jobs:
+  weather:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Post weather
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          LOCATION: "Hatfield"
+        run: python emoji_weather.py
