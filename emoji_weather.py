@@ -1,6 +1,6 @@
-# emoji_weather_hatfield.py
+# emoji_weather.py
 # Posts Hatfield weather to a Discord webhook using wttr.in (emoji output).
-# - Uses precise coords for lookup to avoid ambiguity
+# - Uses precise coords (from secret) to avoid ambiguity
 # - Always displays "Hatfield" as the title
 # - Metric units
 
@@ -10,9 +10,7 @@ import requests
 from urllib.parse import quote_plus
 
 WEBHOOK = os.getenv("DISCORD_WEBHOOK_URL")
-# Exact point in Hatfield, Hertfordshire (tilde tells wttr.in it's a coordinate)
-LOCATION = os.getenv("LOCATION", "~51.7635,-0.2259")
-# What to show in the embed title
+LOCATION = os.getenv("LOCATION", "~51.7635,-0.2259")  # Hatfield coords with ~
 DISPLAY_NAME = os.getenv("DISPLAY_NAME", "Hatfield")
 
 if not WEBHOOK:
@@ -29,7 +27,6 @@ HEADERS = {
 }
 
 def fetch_line(location: str) -> str:
-    # Build URL with proper encoding via params
     base = f"https://wttr.in/{quote_plus(location)}"
     params = {"format": FORMAT, "m": ""}  # m => metric
     r = requests.get(base, params=params, headers=HEADERS, timeout=20)
@@ -52,10 +49,8 @@ def post_discord(title_loc: str, line: str):
 if __name__ == "__main__":
     try:
         line = fetch_line(LOCATION)
-        # If wttr.in still returns an "Unknown location" hint for some reason, show it verbatim.
         post_discord(DISPLAY_NAME, line)
     except Exception as e:
-        # Fallback message so you still get a notification
         try:
             requests.post(
                 WEBHOOK,
